@@ -2,6 +2,8 @@
 	import { onMount, onDestroy } from 'svelte';
 	import { useTweakpane, type FolderApi } from '$lib/tweakpane';
 
+	import gsap, { Quad } from 'gsap';
+
 	let content: HTMLElement | undefined = $state();
 	let cover: HTMLElement | undefined = $state();
 	let card: HTMLElement | undefined = $state();
@@ -16,62 +18,68 @@
 	const pane = useTweakpane();
 	let folder: FolderApi | null = null;
 
-	/**
-	 * Trigger the parallax entrance animation
-	 * Elements animate in sequence: card -> cover -> content
-	 */
 	const triggerParallaxEntrance = () => {
 		if (!card || !cover || !content) return;
+		gsap.killTweensOf([card, cover, content]);
 
-		// Reset elements to starting position (hidden below)
-		card.style.transition = 'none';
-		cover.style.transition = 'none';
-		content.style.transition = 'none';
+		const tl = gsap.timeline({
+			ease: Quad.easeOut
+		});
+		const toSeconds = (ms: number) => ms / 1000;
 
-		card.style.transform = `translateY(${config.card.distance}px)`;
-		card.style.opacity = '0';
+		gsap.set(card, {
+			opacity: 0,
+			y: config.card.distance
+		});
+		gsap.set(cover, {
+			opacity: 0,
+			y: config.cover.distance
+		});
+		gsap.set(content, {
+			opacity: 0,
+			yPercent: -30,
+			xPercent: -50,
+			y: config.content.distance
+		});
 
-		cover.style.transform = `translateY(${config.cover.distance}px)`;
-		cover.style.opacity = '0';
-
-		content.style.transform = `translate(-50%, -30%) translateY(${config.content.distance}px)`;
-		content.style.opacity = '0';
-
-		// Force reflow to apply initial styles
-		void card.offsetHeight;
-
-		// Animate card (first)
-		setTimeout(() => {
-			if (!card) return;
-			card.style.transition = `transform ${config.card.duration}ms cubic-bezier(0.16, 1, 0.3, 1), opacity ${config.card.duration}ms ease-out`;
-			card.style.transform = 'translateY(0)';
-			card.style.opacity = '1';
-		}, config.card.delay);
-
-		// Animate cover (second)
-		setTimeout(() => {
-			if (!cover) return;
-			cover.style.transition = `transform ${config.cover.duration}ms cubic-bezier(0.16, 1, 0.3, 1), opacity ${config.cover.duration}ms ease-out`;
-			cover.style.transform = 'translateY(0)';
-			cover.style.opacity = '1';
-		}, config.card.delay + config.cover.delay);
-
-		// Animate content (third - last)
-		setTimeout(
-			() => {
-				if (!content) return;
-				content.style.transition = `transform ${config.content.duration}ms cubic-bezier(0.16, 1, 0.3, 1), opacity ${config.content.duration}ms ease-out`;
-				content.style.transform = 'translate(-50%, -30%) translateY(0)';
-				content.style.opacity = '1';
+		tl.to(
+			card,
+			{
+				opacity: 1,
+				y: 0,
+				duration: toSeconds(config.card.duration),
+				ease: 'expo.out'
 			},
-			config.card.delay + config.cover.delay + config.content.delay
+			toSeconds(config.card.delay)
 		);
+
+		tl.to(
+			cover,
+			{
+				opacity: 1,
+				y: 0,
+				duration: toSeconds(config.cover.duration),
+				ease: 'expo.out'
+			},
+			toSeconds(config.card.delay + config.cover.delay)
+		);
+
+		tl.to(
+			content,
+			{
+				opacity: 1,
+				y: 0,
+				duration: toSeconds(config.content.duration),
+				ease: 'expo.out'
+			},
+			toSeconds(config.card.delay + config.cover.delay + config.content.delay)
+		);
+
+		return tl;
 	};
 
 	onMount(() => {
-		// Setup Tweakpane controls
 		folder = pane.addFolder({ title: 'Parallax Animation' });
-
 		if (folder) {
 			// Card controls
 			const cardFolder = folder.addFolder({ title: 'Card' });
@@ -181,7 +189,7 @@
 		position: absolute;
 		top: 30%;
 		left: 50%;
-		transform: translate(-50%, -30%);
+		/* transform handled by GSAP: xPercent: -50, yPercent: -30 */
 		will-change: transform, opacity;
 		opacity: 0;
 		object-fit: cover;
