@@ -15,7 +15,7 @@
 <div class="center" bind:this={container}>
 	<div class="card" bind:this={card}>
 		<!-- svelte-ignore a11y_missing_attribute -->
-		<img class="content" bind:this={content} src="./player/player.png" />
+		<img class="content" bind:this={content} src="/player/player.png" />
 		<div class="cover" bind:this={cover}></div>
 	</div>
 </div>
@@ -36,7 +36,7 @@
 		border-radius: 20px;
 		position: relative;
 		will-change: transform, opacity;
-		background-image: url('./player/background.png');
+		background-image: url('/player/background.png');
 		background-size: cover;
 		background-position: center;
 		background-repeat: no-repeat;
@@ -61,7 +61,7 @@
 		width: 100%;
 		height: 50%;
 
-		background-image: url('./player/shape.png');
+		background-image: url('/player/shape.png');
 		background-size: cover;
 		background-position: bottom center;
 		background-repeat: no-repeat;
