@@ -17,7 +17,7 @@
 	// Navigation routes
 	const routes = [
 		{ label: 'Home', path: '/' },
-		{ label: 'Card', path: '/card' },
+		{ label: 'Card', path: '/parallex-card' },
 		{ label: 'Parallax', path: '/parallex' },
 		{ label: 'Screw', path: '/screw' }
 	];
