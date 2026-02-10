@@ -50,18 +50,15 @@
 		const toSec = (ms: number) => ms / 1000;
 		gsap.set(card, {
 			y: config.card.distance,
-			scale: config.card.scale,
-			opacity: 0
+			scale: config.card.scale
 		});
 		gsap.set(cover, {
 			y: config.cover.distance,
-			scale: 1,
-			opacity: 0
+			scale: 1
 		});
 		gsap.set(content, {
 			y: config.content.distance,
 			scale: config.content.scale,
-			opacity: 0,
 			xPercent: -50,
 			yPercent: -30
 		});
@@ -106,34 +103,34 @@
 
 	const setUpTweakpane = () => {
 		folder = pane.addFolder({ title: 'Parallax Animation' });
-		if (folder) {
-			Object.entries(config).forEach(([key, value]) => {
-				console.log(key, value);
-				const newFolder = folder.addFolder({ title: key });
-				newFolder.addBinding(config[key], 'duration', {
-					min: 100,
-					max: 1500,
-					step: 50,
-					label: 'Duration'
-				});
-				newFolder.addBinding(config[key], 'distance', {
-					min: 20,
-					max: 300,
-					step: 10,
-					label: 'Distance'
-				});
-				newFolder.addBinding(config[key], 'scale', {
-					min: 0,
-					max: 1,
-					step: 0.1,
-					label: 'Scale'
-				});
-			});
+		if (!folder) return;
 
-			folder.addButton({ title: 'Replay Animation' }).on('click', () => {
-				triggerParallaxEntrance();
+		const parentFolder = folder;
+		Object.entries(config).forEach(([key]) => {
+			const newFolder = parentFolder.addFolder({ title: key });
+			newFolder.addBinding(config[key], 'duration', {
+				min: 100,
+				max: 1500,
+				step: 50,
+				label: 'Duration'
 			});
-		}
+			newFolder.addBinding(config[key], 'distance', {
+				min: 20,
+				max: 1500,
+				step: 10,
+				label: 'Distance'
+			});
+			newFolder.addBinding(config[key], 'scale', {
+				min: 0,
+				max: 1,
+				step: 0.1,
+				label: 'Scale'
+			});
+		});
+
+		folder.addButton({ title: 'Replay Animation' }).on('click', () => {
+			triggerParallaxEntrance();
+		});
 	};
 
 	onMount(() => {

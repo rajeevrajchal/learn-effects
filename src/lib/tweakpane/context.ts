@@ -1,4 +1,5 @@
 import { getContext, setContext } from 'svelte';
+import { browser } from '$app/environment';
 import { Pane, type FolderApi, type ButtonApi } from 'tweakpane';
 import type { TweakpaneContext, FolderOptions, BindingOptions, ButtonOptions } from './types';
 
@@ -6,18 +7,27 @@ const TWEAKPANE_KEY = Symbol('tweakpane');
 
 /**
  * Creates and sets the Tweakpane context
- * Should only be called from TweakpaneProvider
- * @param container - Optional container element. If not provided, Tweakpane creates its own.
+ * Should only be called from TweakpaneProvider during component initialization
+ * The Pane is created lazily when first accessed (client-side only)
  */
-export function createTweakpaneContext(container?: HTMLElement): TweakpaneContext {
-	const pane = container ? new Pane({ container }) : new Pane();
+export function createTweakpaneContext(): TweakpaneContext {
+	let pane: Pane | null = null;
+
+	const ensurePane = (): Pane | null => {
+		if (!browser) return null;
+		if (!pane) {
+			pane = new Pane();
+		}
+		return pane;
+	};
 
 	const context: TweakpaneContext = {
-		getPane: () => pane,
+		getPane: () => ensurePane(),
 
 		addFolder: (options: FolderOptions): FolderApi | null => {
-			if (!pane) return null;
-			return pane.addFolder({
+			const p = ensurePane();
+			if (!p) return null;
+			return p.addFolder({
 				title: options.title,
 				expanded: options.expanded ?? true
 			});
@@ -31,8 +41,9 @@ export function createTweakpaneContext(container?: HTMLElement): TweakpaneContex
 
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		addBinding: (object: any, key: string, options?: BindingOptions): any => {
-			if (!pane) return null;
-			return pane.addBinding(object, key, {
+			const p = ensurePane();
+			if (!p) return null;
+			return p.addBinding(object, key, {
 				min: options?.min,
 				max: options?.max,
 				step: options?.step,
@@ -42,8 +53,9 @@ export function createTweakpaneContext(container?: HTMLElement): TweakpaneContex
 		},
 
 		addButton: (options: ButtonOptions): ButtonApi | null => {
-			if (!pane) return null;
-			return pane.addButton({
+			const p = ensurePane();
+			if (!p) return null;
+			return p.addButton({
 				title: options.title,
 				label: options.label
 			});
@@ -55,6 +67,7 @@ export function createTweakpaneContext(container?: HTMLElement): TweakpaneContex
 
 		dispose: (): void => {
 			pane?.dispose();
+			pane = null;
 		}
 	};
 

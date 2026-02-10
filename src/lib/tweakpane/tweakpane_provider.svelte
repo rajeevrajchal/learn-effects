@@ -1,5 +1,8 @@
 <script lang="ts">
 	import { onMount, onDestroy, type Snippet } from 'svelte';
+	import { browser } from '$app/environment';
+	import { goto } from '$app/navigation';
+	import { page } from '$app/stores';
 	import { createTweakpaneContext } from './context';
 	import type { TweakpaneContext } from './types';
 
@@ -11,8 +14,13 @@
 
 	let { children, position = 'top-right', title = 'Controls' }: Props = $props();
 
-	let tweakpaneContext: TweakpaneContext | undefined = $state();
-	let mounted = $state(false);
+	// Navigation routes
+	const routes = [
+		{ label: 'Home', path: '/' },
+		{ label: 'Card', path: '/card' },
+		{ label: 'Parallax', path: '/parallex' },
+		{ label: 'Screw', path: '/screw' }
+	];
 
 	// Position styles mapping
 	const positionStyles: Record<string, Record<string, string>> = {
@@ -22,10 +30,12 @@
 		'bottom-left': { bottom: '1rem', left: '1rem' }
 	};
 
-	onMount(() => {
-		// Create context without container - Tweakpane will create its own
-		tweakpaneContext = createTweakpaneContext();
+	// Create context synchronously during component initialization
+	// This allows child components to access it via useTweakpane()
+	const tweakpaneContext: TweakpaneContext = createTweakpaneContext();
 
+	onMount(() => {
+		// Configure the pane after mount (client-side only)
 		const pane = tweakpaneContext.getPane();
 		if (pane) {
 			// Set the pane title
@@ -44,18 +54,27 @@
 					element.style.setProperty(key, value);
 				});
 			}
-		}
 
-		mounted = true;
+			// Add navigation folder
+			const navFolder = pane.addFolder({ title: 'Navigation', expanded: true });
+
+			// Add navigation buttons for each route
+			routes.forEach((route) => {
+				navFolder.addButton({ title: route.label }).on('click', () => {
+					goto(route.path);
+				});
+			});
+
+			// Add separator blade
+			navFolder.addBlade({ view: 'separator' });
+		}
 	});
 
 	onDestroy(() => {
-		if (tweakpaneContext) {
+		if (browser) {
 			tweakpaneContext.dispose();
 		}
 	});
 </script>
 
-{#if mounted}
-	{@render children()}
-{/if}
+{@render children()}
