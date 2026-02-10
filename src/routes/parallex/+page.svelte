@@ -1,18 +1,14 @@
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
+	import { useTweakpane, type FolderApi } from '$lib/tweakpane';
 
 	let content: HTMLElement | undefined = $state();
 	let cover: HTMLElement | undefined = $state();
 	let card: HTMLElement | undefined = $state();
 	let container: HTMLElement | undefined = $state();
 
-	let animationFrameId: number | undefined = undefined;
-
-	const PARALLAX_DEPTH = {
-		card: 5, // Moves least (background)
-		content: 10, // Moves medium (middle layer)
-		cover: 15 // Moves most (foreground)
-	};
+	const pane = useTweakpane();
+	let folder: FolderApi | null = null;
 
 	const ANIMATION_CONFIG = {
 		card: {
@@ -67,12 +63,26 @@
 		);
 	};
 
+	const setUpTweakpane = () => {
+		folder = pane.addFolder({ title: 'Parallax Animation' });
+		if (folder) {
+			folder.addButton({ title: 'Replay Animation' }).on('click', () => {
+				triggerParallaxEntrance();
+			});
+		}
+	};
+
 	onMount(() => {
 		triggerParallaxEntrance();
+		setUpTweakpane();
+	});
+
+	onDestroy(() => {
+		if (folder) {
+			pane.removeFolder(folder);
+		}
 	});
 </script>
-
-<button onclick={triggerParallaxEntrance}>Parallex</button>
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div class="center" bind:this={container}>
@@ -83,15 +93,11 @@
 </div>
 
 <style>
-	button {
-		height: 40px;
-		width: 100px;
-	}
-
 	.center {
 		padding: 4rem;
 		overflow: hidden; /* Hide elements when below */
 	}
+
 	.card {
 		width: 20rem;
 		height: 30rem;
@@ -101,6 +107,7 @@
 		will-change: transform, opacity;
 		opacity: 0; /* Start hidden */
 		overflow: hidden; /* Ensure content and cover don't overflow the card */
+		perspective: 1000px;
 	}
 
 	.content {
@@ -114,6 +121,7 @@
 		will-change: transform, opacity;
 		opacity: 0; /* Start hidden */
 	}
+
 	.cover {
 		position: absolute;
 		bottom: 0;
@@ -126,6 +134,7 @@
 		will-change: transform, opacity;
 		opacity: 0; /* Start hidden */
 	}
+
 	button {
 		margin-top: 2rem;
 		padding: 0.5rem 1rem;
