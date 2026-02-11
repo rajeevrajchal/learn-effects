@@ -43,13 +43,16 @@ export function createTweakpaneContext(): TweakpaneContext {
 		addBinding: (object: any, key: string, options?: BindingOptions): any => {
 			const p = ensurePane();
 			if (!p) return null;
-			return p.addBinding(object, key, {
-				min: options?.min,
-				max: options?.max,
-				step: options?.step,
-				label: options?.label,
-				readonly: options?.readonly
-			});
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			const bindingOptions: any = {
+				label: options?.label
+			};
+			if (options?.min !== undefined) bindingOptions.min = options.min;
+			if (options?.max !== undefined) bindingOptions.max = options.max;
+			if (options?.step !== undefined) bindingOptions.step = options.step;
+			if (options?.readonly !== undefined) bindingOptions.readonly = options.readonly;
+			if (options?.options !== undefined) bindingOptions.options = options.options;
+			return p.addBinding(object, key, bindingOptions);
 		},
 
 		addButton: (options: ButtonOptions): ButtonApi | null => {

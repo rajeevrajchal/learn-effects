@@ -17,6 +17,7 @@ export interface BindingOptions {
 	step?: number;
 	label?: string;
 	readonly?: boolean;
+	options?: Record<string, string | number>;
 }
 
 /**
