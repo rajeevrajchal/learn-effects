@@ -54,18 +54,16 @@
 					element.style.setProperty(key, value);
 				});
 			}
+		}
 
-			// Add navigation folder
-			const navFolder = pane.addFolder({ title: 'Navigation', expanded: true });
-
-			// Add navigation buttons for each route
+		const navigationPane = tweakpaneContext.getPane();
+		if (navigationPane) {
+			const navFolder = navigationPane.addFolder({ title: 'Navigation', expanded: true });
 			routes.forEach((route) => {
 				navFolder.addButton({ title: route.label }).on('click', () => {
 					goto(route.path);
 				});
 			});
-
-			// Add separator blade
 			navFolder.addBlade({ view: 'separator' });
 		}
 	});
