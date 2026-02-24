@@ -35,13 +35,13 @@
 	let svgElement: SVGSVGElement | undefined = $state(undefined);
 
 	let shineTransform = $derived(
-		`rotate(${shine.rotation * 360 + mouse.x * ratio.shine * 36}, 20, 20) scale(1, -1) translate(0, -40)`
+		`rotate(${shine.rotation * 360 + mouse.x * ratio.shine * 36 + mouse.y * ratio.shine * 36}, 20, 20) scale(1, -1) translate(0, -40)`
 	);
 
 	let parallax = $derived({
-		background: { x: mouse.x * ratio.background, y: mouse.y * ratio.background },
-		midground: { x: mouse.x * ratio.midground, y: mouse.y * ratio.midground },
-		foreground: { x: mouse.x * ratio.foreground, y: mouse.y * ratio.foreground }
+		background: { x: mouse.x * ratio.background, y: -mouse.y * ratio.background },
+		midground: { x: mouse.x * ratio.midground, y: -mouse.y * ratio.midground },
+		foreground: { x: mouse.x * ratio.foreground, y: -mouse.y * ratio.foreground }
 	});
 </script>
 
@@ -68,7 +68,6 @@
 
 	<path
 		fill={fills.background}
-		transform={`translate(${parallax.background.x}, ${parallax.background.y})`}
 		d="M20,0h0C8.9,0,0,9,0,20v16c0,2.2,1.8,4,4,4h32c2.2,0,4-1.8,4-4v-16C40,9,31,0,20,0Z"
 	/>
 	<path
