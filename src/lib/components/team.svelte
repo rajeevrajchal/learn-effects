@@ -75,6 +75,7 @@
 		fill="url(#team-badge-gradient)"
 		{opacity}
 		style:mix-blend-mode={mixBlendMode}
+		transform={`translate(${parallax.midground.x}, ${parallax.midground.y})`}
 		d="M20,2C10.1,2,2,10.1,2,20v16c0,1.1.9,2,2,2h32c1.1,0,2-.9,2-2v-16c0-9.9-8.1-18-18-18Z"
 	/>
 	<circle
