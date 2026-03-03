@@ -13,16 +13,6 @@
 		mouse: { x: 0, y: 0 }
 	});
 
-	const gsapTarget = { x: 0, y: 0 };
-
-	let xTo: ReturnType<typeof gsap.quickTo>;
-	let yTo: ReturnType<typeof gsap.quickTo>;
-
-	const onTick = () => {
-		shineConfig.mouse.x = gsapTarget.x;
-		shineConfig.mouse.y = gsapTarget.y;
-	};
-
 	const setUpTweakpane = () => {
 		folder = pane.addFolder({ title: 'Shine Effect' });
 		if (!folder) return;
@@ -52,27 +42,21 @@
 	};
 
 	const handleMouseMove = (e: MouseEvent) => {
-		const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-		xTo(((e.clientX - rect.left) / rect.width) * 2 - 1);
-		yTo(((e.clientY - rect.top) / rect.height) * 2 - 1);
+		const x = (e.clientX / window.innerWidth) * 2 - 1;
+		const y = (e.clientY / window.innerHeight) * 2 - 1;
+		gsap.to(shineConfig.mouse, { x, y, duration: 0.5, ease: 'power2.out', overwrite: true });
 	};
 
 	const handleMouseLeave = () => {
-		xTo(0);
-		yTo(0);
+		gsap.to(shineConfig.mouse, { x: 0, y: 0, duration: 1.0, ease: 'power2.out' });
 	};
 
 	onMount(async () => {
-		xTo = gsap.quickTo(gsapTarget, 'x', { duration: 0.6, ease: 'power3.out' });
-		yTo = gsap.quickTo(gsapTarget, 'y', { duration: 0.6, ease: 'power3.out' });
-		gsap.ticker.add(onTick);
-
 		setUpTweakpane();
 	});
 
 	onDestroy(() => {
-		gsap.ticker.remove(onTick);
-		gsap.killTweensOf(gsapTarget);
+		gsap.killTweensOf(shineConfig.mouse);
 		if (folder) pane.removeFolder(folder);
 		if (parallaxFolder) pane.removeFolder(parallaxFolder);
 	});
