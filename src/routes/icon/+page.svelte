@@ -9,21 +9,20 @@
 	let parallaxFolder: FolderApi | null = null;
 
 	let shineConfig = $state({
-		shine: { rotation: 0 },
 		mouse: { x: 0, y: 0 }
 	});
 
 	const setUpTweakpane = () => {
 		folder = pane.addFolder({ title: 'Shine Effect' });
-		if (!folder) return;
-		folder.addBinding(shineConfig.shine, 'rotation', {
-			min: -1,
-			max: 1,
-			step: 0.01,
-			label: 'Rotation'
-		});
+		// if (!folder) return;
+		// folder.addBinding(shineConfig.shine, 'rotation', {
+		// 	min: -1,
+		// 	max: 1,
+		// 	step: 0.01,
+		// 	label: 'Rotation'
+		// });
 
-		parallaxFolder = pane.addFolder({ title: 'Parallax' });
+		parallaxFolder = pane.addFolder({ title: 'Mouse' });
 		if (!parallaxFolder) return;
 		parallaxFolder.addBinding(shineConfig.mouse, 'x', {
 			min: -1,
@@ -63,7 +62,8 @@
 </script>
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
-<div class="center" onmousemove={handleMouseMove} onmouseleave={handleMouseLeave}>
+<svelte:window onmousemove={handleMouseMove} onmouseleave={handleMouseLeave} />
+<div class="center">
 	<Team config={shineConfig} />
 </div>
 

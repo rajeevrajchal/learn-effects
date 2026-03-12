@@ -12,7 +12,6 @@
 		config
 	}: {
 		config: {
-			shine: { rotation: number };
 			mouse: { x: number; y: number };
 		};
 	} = $props();
@@ -31,23 +30,28 @@
 	let opacity = $derived(fills.background === '#000000' ? 0.3 : 0.5);
 	let mixBlendMode = $derived(fills.background === '#000000' ? 'normal' : 'overlay');
 
-	let shine = $derived(config.shine);
+	let tilt = $derived({
+		x: config.mouse.x * 20,
+		y: -config.mouse.y * 20
+	});
 	let mouse = $derived(config.mouse);
 
-	let tilt = $derived({
-		x: config.mouse.x * 12,
-		y: -config.mouse.y * 12
-	});
-	let tiltStyle = $derived(`perspective(400px) rotateY(${tilt.x}deg) rotateX(${tilt.y}deg)`);
-
-	let shineTransform = $derived(
-		`rotate(${Math.atan2(mouse.y, mouse.x) * (180 / Math.PI)}, 20, 20) scale(1, -1) translate(0, -40)`
-	);
+	let tiltStyle = $derived(` rotateY(${tilt.x}deg) rotateX(${tilt.y}deg) `);
+	let transform = $derived(`scale(1, -1) translate(0, -40)`);
 
 	let parallax = $derived({
-		background: { x: mouse.x * ratio.background, y: mouse.y * ratio.background },
-		midground: { x: mouse.x * ratio.midground, y: mouse.y * ratio.midground },
-		foreground: { x: mouse.x * ratio.foreground, y: mouse.y * ratio.foreground }
+		background: {
+			x: mouse.x * ratio.background,
+			y: -mouse.y * ratio.background
+		},
+		midground: {
+			x: mouse.x * ratio.midground,
+			y: -mouse.y * ratio.midground
+		},
+		foreground: {
+			x: mouse.x * ratio.foreground,
+			y: -mouse.y * ratio.foreground
+		}
 	});
 </script>
 
@@ -55,26 +59,33 @@
 	xmlns="http://www.w3.org/2000/svg"
 	class={['team-icon']}
 	viewBox="0 0 40 40"
-	transform="matrix(1,0,0,-1,0,0)"
-	style:transform={tiltStyle}
-	style:will-change="transform"
 	style:overflow="hidden"
+	style:will-change="transform"
+	style:transform={tiltStyle}
+	style:transform-style="preserve-3d"
+	style:backface-visibility="hidden"
 >
 	<defs>
 		<linearGradient
-			id="team-badge-gradient"
+			xmlns="http://www.w3.org/2000/svg"
+			id={`team-badge-gradient-${id}`}
 			x1="0"
 			y1="0"
 			x2="0"
 			y2="40"
 			gradientUnits="userSpaceOnUse"
 		>
-			<stop offset=".05" stop-color="#000" />
-			<stop offset=".95" stop-color="#fff" />
+			<stop offset=".05" stop-color="#000000" />
+			<stop offset=".95" stop-color="#ffffff" />
 		</linearGradient>
+		<clipPath id={`badge-clip-${id}`}>
+			<path d="M20,0h0C8.9,0,0,9,0,20v16c0,2.2,1.8,4,4,4h32c2.2,0,4-1.8,4-4v-16C40,9,31,0,20,0Z" />
+		</clipPath>
 	</defs>
-
-	<g transform="translate(20, 20) scale(1, -1) translate(-20, -20)">
+	<g
+		transform="translate(20, 20) scale(1, -1) translate(-20, -20)"
+		clip-path={`url(#badge-clip-${id})`}
+	>
 		<path
 			fill={fills.background}
 			d="M20,0h0C8.9,0,0,9,0,20v16c0,2.2,1.8,4,4,4h32c2.2,0,4-1.8,4-4v-16C40,9,31,0,20,0Z"
@@ -125,17 +136,16 @@
 		{/if}
 
 		<!-- shine -->
-		{#if shine}
-			<image
-				href="/team/team-shine.png"
-				x="-2.2"
-				y="-6.2"
-				width="42"
-				height="44"
-				transform={shineTransform}
-				style="mix-blend-mode: overlay;"
-				preserveAspectRatio="xMidYMid slice"
-			/>
-		{/if}
+		<image
+			href="/team/team-shine.png"
+			x="-2.2"
+			y="-6.2"
+			width="42"
+			height="44"
+			style:transform
+			style="mix-blend-mode: overlay;"
+			preserveAspectRatio="xMidYMid slice"
+			style:will-change="transform"
+		/>
 	</g>
 </svg>
