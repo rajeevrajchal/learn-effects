@@ -34,3 +34,11 @@
 <div class="center">
 	<Progress {value} />
 </div>
+
+<style>
+	.center {
+		:global(svg) {
+			width: 80px;
+		}
+	}
+</style>
