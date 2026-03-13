@@ -1,8 +1,10 @@
 <script lang="ts">
 	let {
-		value = $bindable(0)
+		value = $bindable(0),
+		steps = 0
 	}: {
 		value?: number;
+		steps?: number;
 	} = $props();
 
 	const VIEWBOX_WIDTH = 100;
@@ -10,8 +12,30 @@
 	const CX_LEFT = 40;
 	const CX_RIGHT = 540;
 	const CY = 40;
-	const BONE_START = CX_LEFT - 34; // = 6  (leftmost edge of left border circle)
-	const BONE_TOTAL_WIDTH = CX_RIGHT + 34 - BONE_START; // = 568 (full bone span)
+
+	const circlePositions = $derived(
+		steps < 2
+			? steps === 1
+				? [CX_LEFT]
+				: []
+			: Array.from({ length: steps }, (_, i) => CX_LEFT + ((CX_RIGHT - CX_LEFT) * i) / (steps - 1))
+	);
+
+	// One tube segment [left cx, right cx] between each adjacent pair of circles.
+	// Empty when steps <= 1.
+	const segments = $derived(
+		circlePositions.slice(0, -1).map((cx, i) => ({
+			left: cx,
+			right: circlePositions[i + 1]
+		}))
+	);
+
+	// Total bone extent — drives green fill rect width.
+	// steps=0: pure tube spanning full viewBox width, no knobs.
+	// steps>=1: from leftmost circle edge to rightmost circle edge.
+	const boneStart = $derived(steps === 0 ? 0 : circlePositions[0] - 34);
+	const boneEnd = $derived(steps === 0 ? VIEWBOX_WIDTH : (circlePositions.at(-1) ?? CX_LEFT) + 34);
+	const boneTotalWidth = $derived(boneEnd - boneStart);
 </script>
 
 <svg
@@ -28,27 +52,48 @@
 			<stop offset="100%" stop-color="#8cc63f" />
 		</linearGradient>
 		<clipPath id="pg-bone-inner">
-			<circle cx={CX_LEFT} cy={CY} r="22" />
-			<rect x={CX_LEFT} y="34" width="500" height="12" />
-			<circle cx={CX_RIGHT} cy={CY} r="22" />
+			{#if steps === 0}
+				<rect x="0" y="34" width={VIEWBOX_WIDTH} height="12" />
+			{:else}
+				{#each circlePositions as cx (cx)}
+					<circle {cx} cy={CY} r="22" />
+				{/each}
+				{#each segments as seg (seg.left)}
+					<rect x={seg.left} y="34" width={seg.right - seg.left} height="12" />
+				{/each}
+			{/if}
 		</clipPath>
 	</defs>
 
 	<!-- Gray border layer -->
-	<circle cx={CX_LEFT} cy={CY} r="34" fill="#4a4a4a" />
-	<circle cx={CX_RIGHT} cy={CY} r="34" fill="#4a4a4a" />
-	<rect x={CX_LEFT} y="25" width="500" height="30" fill="#4a4a4a" />
+	{#if steps === 0}
+		<rect x="0" y="25" width={VIEWBOX_WIDTH} height="30" fill="#4a4a4a" />
+	{:else}
+		{#each circlePositions as cx (cx)}
+			<circle {cx} cy={CY} r="34" fill="#4a4a4a" />
+		{/each}
+		{#each segments as seg (seg.left)}
+			<rect x={seg.left} y="25" width={seg.right - seg.left} height="30" fill="#4a4a4a" />
+		{/each}
+	{/if}
 
 	<!-- Dark inner body -->
-	<circle cx={CX_LEFT} cy={CY} r="28" fill="#2e2e2e" />
-	<circle cx={CX_RIGHT} cy={CY} r="28" fill="#2e2e2e" />
-	<rect x={CX_LEFT} y="31" width="500" height="18" fill="#2e2e2e" />
+	{#if steps === 0}
+		<rect x="0" y="31" width={VIEWBOX_WIDTH} height="18" fill="#2e2e2e" />
+	{:else}
+		{#each circlePositions as cx (cx)}
+			<circle {cx} cy={CY} r="28" fill="#2e2e2e" />
+		{/each}
+		{#each segments as seg (seg.left)}
+			<rect x={seg.left} y="31" width={seg.right - seg.left} height="18" fill="#2e2e2e" />
+		{/each}
+	{/if}
 
-	<!-- Green fill clipped to INNER bone shape, width driven by value -->
+	<!-- Green fill clipped to inner bone shape, width driven by value -->
 	<rect
-		x={BONE_START}
+		x={boneStart}
 		y="0"
-		width={(value / 100) * BONE_TOTAL_WIDTH}
+		width={(value / 100) * boneTotalWidth}
 		height={VIEWBOX_HEIGHT}
 		fill="url(#pg-gradient)"
 		clip-path="url(#pg-bone-inner)"
