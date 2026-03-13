@@ -7,20 +7,20 @@
 	let folder: FolderApi | null = null;
 
 	let progressConfig = $state({
-		progress: { value: 80 }
+		value: 80
 	});
 
 	const setUpTweakpane = () => {
 		folder = pane.addFolder({ title: 'Progress' });
 		if (!folder) return;
-		folder.addBinding(progressConfig.progress, 'value', {
+		folder.addBinding(progressConfig, 'value', {
 			min: 0,
 			max: 100,
 			step: 1
 		});
 	};
 
-	let value = $derived(progressConfig.progress.value);
+	let value = $derived(progressConfig.value);
 
 	onMount(async () => {
 		setUpTweakpane();
