@@ -1,7 +1,7 @@
 <script lang="ts">
 	let {
 		value = $bindable(0),
-		steps = 0
+		steps = 2
 	}: {
 		value?: number;
 		steps?: number;
@@ -36,6 +36,11 @@
 	const boneStart = $derived(steps === 0 ? 0 : circlePositions[0] - 34);
 	const boneEnd = $derived(steps === 0 ? VIEWBOX_WIDTH : (circlePositions.at(-1) ?? CX_LEFT) + 34);
 	const boneTotalWidth = $derived(boneEnd - boneStart);
+
+	const tipX = $derived(boneStart + (value / 100) * boneTotalWidth);
+	const showTip = $derived(
+		value > 0 && !circlePositions.some((cx) => Math.abs(tipX - cx - 4) <= 30)
+	);
 </script>
 
 <svg
@@ -98,4 +103,9 @@
 		fill="url(#pg-gradient)"
 		clip-path="url(#pg-bone-inner)"
 	/>
+
+	<!-- indicator -->
+	{#if showTip}
+		<rect x={tipX - 2} y="25" width="12" height={30} fill="url(#pg-gradient)" />
+	{/if}
 </svg>

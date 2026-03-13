@@ -8,7 +8,8 @@
 
 	let progressConfig = $state({
 		value: 80,
-		steps: 2
+		steps: 2,
+		width: 8
 	});
 
 	const setUpTweakpane = () => {
@@ -24,6 +25,11 @@
 			max: 5,
 			step: 1
 		});
+		folder.addBinding(progressConfig, 'width', {
+			min: 0,
+			max: 100,
+			step: 10
+		});
 	};
 
 	let value = $derived(progressConfig.value);
@@ -38,14 +44,15 @@
 	});
 </script>
 
-<div class="center">
+<div class="center" style="--width: {progressConfig.width}">
 	<Progress {value} {steps} />
 </div>
 
 <style>
 	.center {
+		--width: 8;
 		:global(svg) {
-			width: 80px;
+			width: calc(var(--width) * 10px);
 		}
 	}
 </style>
